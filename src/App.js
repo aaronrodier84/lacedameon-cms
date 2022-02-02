@@ -173,7 +173,7 @@ function CmsComponent() {
     let req = _whitelistAddr.replaceAll('"', '').replaceAll(" ", "").split(',');
     console.log('req', req);
     if (!!(library && account)) {
-      if (chainId != 4) {
+      if (chainId != 1) {
         setNetworkChangeModalShow(true);
       } else if (contract) {
         try {
