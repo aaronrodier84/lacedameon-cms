@@ -305,7 +305,7 @@ function CmsComponent() {
       {/*Add whilte-list*/}
       <div className="contract-section">
         <Container>
-          <h3>Add whiteList</h3>
+          <h3>Add Whitelist</h3>
           <InputGroup className="mb-3">
             <InputGroup.Text id="basic-addon1">wallet addr</InputGroup.Text>
             <FormControl
@@ -318,25 +318,9 @@ function CmsComponent() {
           <Button style={{ marginRight: "30px" }} size="sm" onClick={() => addWhiteWalletAddr(whiteWalletAddr)}>
             Add Single Wallet
           </Button>
-          <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1" style={{ marginTop: "50px" }}>
-            <Form.Label>Add Multiple Wallets</Form.Label>
-            <Form.Control as="textarea" rows={3} onChange={event => setMultipleWhitelist(event.target.value)} />
-          </Form.Group>
-          <Button style={{ marginRight: "30px" }} size="sm" onClick={() => addMultipleWhitelist(multipleWhitelist)}>
-            Add Multiple Wallets
+          <Button style={{ marginRight: "30px" }} size="sm" onClick={() => checkWhitelistWallet(whiteWalletAddr)}>
+            Check Whitelist
           </Button>
-          <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1" style={{ marginTop: "10px" }}>
-            <Form.Label>Check Whitelist Wallet</Form.Label>
-            <InputGroup className="mb-3">
-              <InputGroup.Text id="basic-addon2">wallet addr</InputGroup.Text>
-              <FormControl
-                placeholder=""
-                aria-label="wallet-addr"
-                aria-describedby="basic-addon2"
-                onChange={event => setConfirmWallet(event.target.value)}
-              />
-            </InputGroup>
-          </Form.Group>
           {
             whitelistResult != null &&
             (
@@ -356,8 +340,12 @@ function CmsComponent() {
               </>
             )
           }
-          <Button style={{ marginRight: "30px" }} size="sm" onClick={() => checkWhitelistWallet(confirmWallet)}>
-            Check Whitelist
+          <h3>Add Multiple Wallets</h3>
+          <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
+            <Form.Control as="textarea" rows={3} onChange={event => setMultipleWhitelist(event.target.value)} />
+          </Form.Group>
+          <Button style={{ marginRight: "30px" }} size="sm" onClick={() => addMultipleWhitelist(multipleWhitelist)}>
+            Add Multiple Wallets
           </Button>
           <h3>Add Winner Wallet</h3>
           <InputGroup className="mb-3">
