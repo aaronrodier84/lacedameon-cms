@@ -71,22 +71,12 @@ function CmsComponent() {
   const [winnerAmount, setWinnerAmount] = useState(0);
   const [winnerWalletAddr, setWinnerWalletAddr] = useState(null);
   const [winnerlistResult, setWinnerlistResult] = useState(null);
+  const [saleStatus, setSaleStatus] = useState(null);
+  const [privateSaleStatus, setPrivateSaleStatus] = useState(null);
   const { account, library, activate, deactivate, chainId } = useWeb3React();
-
+  
   const toggle = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
-
-  // useEffect(() => {
-  //   window.addEventListener("scroll", handleScroll);
-  // });
-
-  // const handleScroll = () => {
-  //   if (window.scrollY > 90) {
-  //     setSticky(true);
-  //   } else if (window.scrollY < 90) {
-  //     setSticky(false);
-  //   }
-  // };
 
   const connectWallet = () => {
     setWallectConnectionModalShow(true);
@@ -129,6 +119,10 @@ function CmsComponent() {
               setMaxTokenNumber(Number(_maxTokenNumber));
               let _totalSupply = await nftcontract.totalSupply();
               setTotalSupply(Number(_totalSupply));
+              let _saleStatus = await nftcontract.saleIsActive();
+              setSaleStatus(_saleStatus);
+              let _privaetSaleStatus = await nftcontract.privateSaleIsActive();
+              setPrivateSaleStatus(_privaetSaleStatus);
             } catch (ex) {
               console.log(`failed call contract method MAX_ELEMENT: `, ex)
             }
@@ -264,6 +258,71 @@ function CmsComponent() {
     }
   }
 
+  const flipSaleStatus = async() => {
+    if (!!(library && account)) {
+      if (chainId != 4) {
+        setNetworkChangeModalShow(true);
+      } else if (contract) {
+        try {
+          await contract.flipSaleState();
+          setSaleStatus(!saleStatus);
+          console.log('success');
+        } catch (err) {
+          console.log(err);
+          if (err.constructor !== Object) {
+            if (String(err).includes('"code":-32000')) {
+              setErrMsg('Error: insufficient funds for intrinsic transaction cost');
+              setErrorModalShow(true);
+            } else {
+              let startingIndex = String(err).indexOf('"message"');
+              let endingIndex = String(err).indexOf('"data"');
+              let sub1 = String(err).substring(startingIndex, endingIndex);
+              let sub2 = sub1.replace('"message":"', '');
+              let ret = sub2.replace('",', '');
+              setErrMsg(ret);
+              setErrorModalShow(true);
+            }
+          }
+        }
+      }
+    } else {
+      setWalletConnectInfoModalShow(true);
+    }
+  }
+
+  const flipPrivateSaleStatus = async() => {
+    if (!!(library && account)) {
+      if (chainId != 4) {
+        setNetworkChangeModalShow(true);
+      } else if (contract) {
+        try {
+          await contract.flipPrivateSaleState();
+          setPrivateSaleStatus(!privateSaleStatus);
+          console.log('success');
+        } catch (err) {
+          console.log(err);
+          if (err.constructor !== Object) {
+            if (String(err).includes('"code":-32000')) {
+              setErrMsg('Error: insufficient funds for intrinsic transaction cost');
+              setErrorModalShow(true);
+            } else {
+              let startingIndex = String(err).indexOf('"message"');
+              let endingIndex = String(err).indexOf('"data"');
+              let sub1 = String(err).substring(startingIndex, endingIndex);
+              let sub2 = sub1.replace('"message":"', '');
+              let ret = sub2.replace('",', '');
+              setErrMsg(ret);
+              setErrorModalShow(true);
+            }
+          }
+        }
+      }
+    } else {
+      setWalletConnectInfoModalShow(true);
+    }
+  }
+
+
 
   return (
     <div className="App">
@@ -305,7 +364,7 @@ function CmsComponent() {
       {/*Add whilte-list*/}
       <div className="contract-section">
         <Container>
-          <h3>Add Whitelist</h3>
+          <h3>Add/Check Whitelist</h3>
           <InputGroup className="mb-3">
             <InputGroup.Text id="basic-addon1">wallet addr</InputGroup.Text>
             <FormControl
@@ -347,7 +406,7 @@ function CmsComponent() {
           <Button style={{ marginRight: "30px" }} size="sm" onClick={() => addMultipleWhitelist(multipleWhitelist)}>
             Add Multiple Wallets
           </Button>
-          <h3>Add Winner Wallet</h3>
+          <h3>Add/Check Winner Wallet</h3>
           <InputGroup className="mb-3">
             <InputGroup.Text id="basic-addon3">wallet addr</InputGroup.Text>
             <FormControl
@@ -392,6 +451,14 @@ function CmsComponent() {
               </>
             )
           }
+          <h3>Sale Status: {saleStatus !== null ? saleStatus ? "TRUE" : "FALSE" : ""}</h3>
+          <Button size="sm" onClick={() => flipSaleStatus()}>
+            Flip Sale Status
+          </Button>
+          <h3>Private Sale Status: {privateSaleStatus !== null ? privateSaleStatus ? "TRUE" : "FALSE" : ""}</h3>
+          <Button size="sm" onClick={() => flipPrivateSaleStatus()}>
+            Flip Private Sale Status
+          </Button>
         </Container>
       </div>
       {/* WalletConnection Modal */}
