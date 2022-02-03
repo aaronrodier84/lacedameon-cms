@@ -260,7 +260,7 @@ function CmsComponent() {
 
   const flipSaleStatus = async() => {
     if (!!(library && account)) {
-      if (chainId != 4) {
+      if (chainId != 1) {
         setNetworkChangeModalShow(true);
       } else if (contract) {
         try {
@@ -292,7 +292,7 @@ function CmsComponent() {
 
   const flipPrivateSaleStatus = async() => {
     if (!!(library && account)) {
-      if (chainId != 4) {
+      if (chainId != 1) {
         setNetworkChangeModalShow(true);
       } else if (contract) {
         try {
