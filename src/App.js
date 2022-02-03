@@ -64,24 +64,29 @@ function CmsComponent() {
   const [errorModalShow, setErrorModalShow] = useState(false);
   const [errMsg, setErrMsg] = useState("");
   // const [visible, setVisible] = useState(false);
+  const [confirmWallet, setConfirmWallet] = useState("");
+  const [whitelistResult, setWhitelistResult] = useState(null);
   const [walletAddr, setWalletAddr] = useState("");
   const [multipleWhitelist, setMultipleWhitelist] = useState([]);
+  const [winnerAmount, setWinnerAmount] = useState(0);
+  const [winnerWalletAddr, setWinnerWalletAddr] = useState(null);
+  const [winnerlistResult, setWinnerlistResult] = useState(null);
   const { account, library, activate, deactivate, chainId } = useWeb3React();
 
   const toggle = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-  });
+  // useEffect(() => {
+  //   window.addEventListener("scroll", handleScroll);
+  // });
 
-  const handleScroll = () => {
-    if (window.scrollY > 90) {
-      setSticky(true);
-    } else if (window.scrollY < 90) {
-      setSticky(false);
-    }
-  };
+  // const handleScroll = () => {
+  //   if (window.scrollY > 90) {
+  //     setSticky(true);
+  //   } else if (window.scrollY < 90) {
+  //     setSticky(false);
+  //   }
+  // };
 
   const connectWallet = () => {
     setWallectConnectionModalShow(true);
@@ -202,6 +207,63 @@ function CmsComponent() {
     }
   }
 
+  const checkWhitelistWallet = async (_walletAddr) => {
+    setWhitelistResult(null);
+    if (!!(library && account)) {
+      if (chainId != 1) {
+        setNetworkChangeModalShow(true);
+      } else if (contract) {
+        console.log('_walletAddr', _walletAddr);
+        let result = await contract.isWhitelisted(_walletAddr);
+        setWhitelistResult(result);
+      }
+    }
+  }
+
+  const addWinnerWalletAddr = async (_walletAddr, _amount) => {
+    if (!!(library && account)) {
+      if (chainId != 1) {
+        setNetworkChangeModalShow(true);
+      } else if (contract) {
+        try {
+          await contract.addAddressToWinnerlist(_walletAddr, _amount);
+          console.log('success');
+        } catch (err) {
+          console.log(err);
+          if (err.constructor !== Object) {
+            if (String(err).includes('"code":-32000')) {
+              setErrMsg('Error: insufficient funds for intrinsic transaction cost');
+              setErrorModalShow(true);
+            } else {
+              let startingIndex = String(err).indexOf('"message"');
+              let endingIndex = String(err).indexOf('"data"');
+              let sub1 = String(err).substring(startingIndex, endingIndex);
+              let sub2 = sub1.replace('"message":"', '');
+              let ret = sub2.replace('",', '');
+              setErrMsg(ret);
+              setErrorModalShow(true);
+            }
+          }
+        }
+      }
+    } else {
+      setWalletConnectInfoModalShow(true);
+    }
+  }
+
+  const checkWinnerlist = async (_walletAddr) => {
+    setWinnerlistResult(null);
+    if (!!(library && account)) {
+      if (chainId != 1) {
+        setNetworkChangeModalShow(true);
+      } else if (contract) {
+        console.log('_walletAddr', _walletAddr);
+        let result = await contract.isWinnerlisted(_walletAddr);
+        setWinnerlistResult(result);
+      }
+    }
+  }
+
 
   return (
     <div className="App">
@@ -257,15 +319,93 @@ function CmsComponent() {
             Add Single Wallet
           </Button>
           <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1" style={{ marginTop: "50px" }}>
-            <Form.Label>Example textarea</Form.Label>
+            <Form.Label>Add Multiple Wallets</Form.Label>
             <Form.Control as="textarea" rows={3} onChange={event => setMultipleWhitelist(event.target.value)} />
           </Form.Group>
           <Button style={{ marginRight: "30px" }} size="sm" onClick={() => addMultipleWhitelist(multipleWhitelist)}>
             Add Multiple Wallets
           </Button>
+          <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1" style={{ marginTop: "10px" }}>
+            <Form.Label>Check Whitelist Wallet</Form.Label>
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon2">wallet addr</InputGroup.Text>
+              <FormControl
+                placeholder=""
+                aria-label="wallet-addr"
+                aria-describedby="basic-addon2"
+                onChange={event => setConfirmWallet(event.target.value)}
+              />
+            </InputGroup>
+          </Form.Group>
+          {
+            whitelistResult != null &&
+            (
+              <>
+                {
+                  whitelistResult == true &&
+                  (
+                    <h3 style={{ color: "green" }}>True</h3>
+                  )
+                }
+                {
+                  whitelistResult == false &&
+                  (
+                    <h3 style={{ color: "red" }}>False</h3>
+                  )
+                }
+              </>
+            )
+          }
+          <Button style={{ marginRight: "30px" }} size="sm" onClick={() => checkWhitelistWallet(confirmWallet)}>
+            Check Whitelist
+          </Button>
+          <h3>Add Winner Wallet</h3>
+          <InputGroup className="mb-3">
+            <InputGroup.Text id="basic-addon3">wallet addr</InputGroup.Text>
+            <FormControl
+              placeholder=""
+              aria-label="wallet-addr"
+              aria-describedby="basic-addon3"
+              onChange={event => setWinnerWalletAddr(event.target.value)}
+            />
+          </InputGroup>
+          <InputGroup className="mb-3">
+            <InputGroup.Text id="basic-addon4">number of NFTs</InputGroup.Text>
+            <FormControl
+              value={winnerAmount}
+              placeholder=""
+              aria-label="wallet-addr"
+              aria-describedby="basic-addon5"
+              onChange={event => setWinnerAmount(event.target.value)}
+            />
+          </InputGroup>
+          <Button style={{marginRight: "30px"}} size="sm" onClick={() => addWinnerWalletAddr(winnerWalletAddr, winnerAmount)}>
+            Add
+          </Button>
+          <Button size="sm" onClick={() => checkWinnerlist(winnerWalletAddr)}>
+            Check Winnerlist
+          </Button>
+          {
+            winnerlistResult != null &&
+            (
+              <>
+                {
+                  winnerlistResult == true &&
+                  (
+                    <h3 style={{ color: "green" }}>Wallet is Winner</h3>
+                  )
+                }
+                {
+                  winnerlistResult == false &&
+                  (
+                    <h3 style={{ color: "red" }}>Wallet is not Winner</h3>
+                  )
+                }
+              </>
+            )
+          }
         </Container>
       </div>
-
       {/* WalletConnection Modal */}
       <Modal
         className="wallet-connection"
